@@ -1,46 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Weather from './components/Weather'
 import './App.css';
-
-function getWeather(loc) {
-  const key = process.env.REACT_APP_API_KEY
-  const base = "https://api.openweathermap.org/data/2.5/weather"
-  const url = `${base}?q=${loc}&units=imperial&appid=${key}`
-
-  let body = null;
-
-  fetch(url)
-    .then(res => res.json())
-    .then(data => { body = data })
-    .catch(err => console.log(err.message))
-
-  return body
-}
 
 
 function App() {
   const [location, setLocation] = useState('');
-  const [weatherInfo, setWeatherInfo] = useState(getWeather('London,uk'));
-  const { name } = weatherInfo;
+  const [weatherInfo, setWeatherInfo] = useState(null);
+
+  useEffect(() => {
+    async function getWeather(loc) {
+      const key = process.env.REACT_APP_API_KEY
+      const base = "https://api.openweathermap.org/data/2.5/weather"
+      const url = `${base}?q=${loc}&appid=${key}&units=imperial`
+
+      try {
+        const res = await fetch(url)
+        const data = await res.json()
+        setWeatherInfo(data)
+      }
+      catch (err) { console.log(err.message) }
+    }
+    getWeather(location)
+  }, [location, setWeatherInfo])
+
   return (
     <div className="App">
       <header className="App-header">
-        <Weather name={name} />
-        <h1>{location}</h1>
-        <form onSubmit={e => {
-          setWeatherInfo(getWeather(location))
-          console.log(weatherInfo)
-        }}>
+        <form >
           <input
-            value={location}
-            onChange={e => {
-              setLocation(e.target.value)
-            }}
             type="text"
             placeholder="Enter the name of a city."
           />
-          <button type="submit">Submit</button>
+          <button
+            type="submit"
+            onSubmit={e => {
+              setLocation(e.target.value)
+            }}
+          >Submit</button>
         </form>
+        {location ? <Weather name={location} data={weatherInfo} /> : null}
       </header>
     </div>
   );
