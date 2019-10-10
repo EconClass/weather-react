@@ -1,44 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Weather from './components/Weather'
 import './App.css';
 
 
 function App() {
-  const [location, setLocation] = useState('');
-  const [weatherInfo, setWeatherInfo] = useState(null);
-
-  useEffect(() => {
-    async function getWeather(loc) {
-      const key = process.env.REACT_APP_API_KEY
-      const base = "https://api.openweathermap.org/data/2.5/weather"
-      const url = `${base}?q=${loc}&appid=${key}&units=imperial`
-
-      try {
-        const res = await fetch(url)
-        const data = await res.json()
-        setWeatherInfo(data)
-      }
-      catch (err) { console.log(err.message) }
-    }
-    getWeather(location)
-  }, [location, setWeatherInfo])
+  const [inputValue, setValue] = useState('');
+  const [location, setLocation] = useState(inputValue);
 
   return (
     <div className="App">
       <header className="App-header">
-        <form >
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          setLocation(inputValue);
+          console.log("Input:", inputValue)
+          console.log("Location:", location)
+        }}>
           <input
             type="text"
             placeholder="Enter the name of a city."
-          />
-          <button
-            type="submit"
-            onSubmit={e => {
-              setLocation(e.target.value)
+            value={inputValue}
+            onChange={e => {
+              setValue(e.target.value)
+              console.log(inputValue)
             }}
-          >Submit</button>
+          />
         </form>
-        {location ? <Weather name={location} data={weatherInfo} /> : null}
+
+        {location !== '' ? <Weather loc={location} /> : null}
       </header>
     </div>
   );
